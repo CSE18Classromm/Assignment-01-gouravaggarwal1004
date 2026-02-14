@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify - Web Player</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<style>
+    :root {
+    --bg-black: #000000;
+    --bg-base: #121212;
+    --bg-highlight: #1a1a1a;
+    --bg-card: #181818;
+    --bg-card-hover: #282828;
+    --spotify-green: #1ed760;
+    --text-white: #ffffff;
+    --text-gray: #b3b3b3;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-black);
+    color: var(--text-white);
+    font-family: 'Circular', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-template-rows: 1fr 90px;
+    height: 100vh;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    background-color: var(--bg-black);
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding-left: 12px;
+}
+
+.nav-item {
+    color: var(--text-gray);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.nav-item:hover, .nav-item.active {
+    color: var(--text-white);
+}
+
+.nav-item i {
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+/* Main View Styling */
+.main-view {
+    background: linear-gradient(to bottom, #222222, var(--bg-base) 40%);
+    overflow-y: auto;
+    border-radius: 8px;
+    margin: 8px 8px 0 0;
+}
+
+/* Custom Scrollbar */
+.main-view::-webkit-scrollbar {
+    width: 12px;
+}
+.main-view::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 32px;
+    position: sticky;
+    top: 0;
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.user-profile {
+    background: rgba(0,0,0,0.7);
+    padding: 2px 8px 2px 2px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.user-profile img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+/* Music Cards */
+.hero-section, .shelf {
+    padding: 24px 32px;
+}
+
+.recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.recent-card {
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: background 0.3s;
+    cursor: pointer;
+}
+
+.recent-card:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.recent-card img { width: 80px; height: 80px; }
+.recent-card span { padding: 16px; font-weight: bold; }
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+}
+
+.music-card {
+    background: var(--bg-card);
+    padding: 16px;
+    border-radius: 8px;
+    transition: background 0.3s;
+    position: relative;
+    cursor: pointer;
+}
+
+.music-card:hover { background: var(--bg-card-hover); }
+
+.music-card img {
+    width: 100%;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* Play button hover effect */
+.img-container { position: relative; }
+
+.play-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    background: var(--spotify-green);
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.music-card:hover .play-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Player Bar Styling */
+.player-bar {
+    grid-column: span 2;
+    background-color: var(--bg-black);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.now-playing {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 30%;
+}
+
+.now-playing img { width: 56px; height: 56px; border-radius: 4px; }
+
+.track-name { font-size: 0.9rem; font-weight: 500; }
+.artist-name { font-size: 0.75rem; color: var(--text-gray); }
+
+.player-controls {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: var(--text-gray);
+    font-size: 1.1rem;
+}
+
+.main-play {
+    font-size: 2rem;
+    color: white;
+}
+
+.main-play:hover { transform: scale(1.05); color: var(--spotify-green); }
+
+.progress-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.progress-bg {
+    height: 4px;
+    background: #4f4f4f;
+    flex: 1;
+    border-radius: 2px;
+}
+
+.progress-fill {
+    width: 40%;
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+}
+
+.volume-controls {
+    width: 30%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-gray);
+}
+
+.volume-bg { width: 100px; height: 4px; background: #4f4f4f; border-radius: 2px; }
+.volume-fill { width: 70%; height: 100%; background: white; border-radius: 2px; }
+</style>
+<body>
+    <div class="grid-container">
+        <aside class="sidebar">
+            <div class="nav-links">
+                <div class="logo"><i class="fa-brands fa-spotify"></i> Spotify</div>
+                <div class="nav-item active"><i class="fa-solid fa-house"></i> Home</div>
+                <div class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Search</div>
+                <div class="nav-item"><i class="fa-solid fa-lines-leaning"></i> Your Library</div>
+            </div>
+            <div class="playlist-section">
+                <div class="nav-item"><i class="fa-solid fa-square-plus"></i> Create Playlist</div>
+                <div class="nav-item"><i class="fa-solid fa-heart"></i> Liked Songs</div>
+                <hr>
+                <div class="playlist-list">
+                    <p>Chill Vibes 2024</p>
+                    <p>Coding Focus</p>
+                    <p>Deep House Selection</p>
+                    <p>Rock Classics</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-view">
+            <header class="top-nav">
+                <div class="arrows">
+                    <span class="arrow"><i class="fa-solid fa-chevron-left"></i></span>
+                    <span class="arrow"><i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/100" alt="Avatar">
+                    <span>John Doe</span>
+                </div>
+            </header>
+
+            <section class="hero-section">
+                <h1>Good Evening</h1>
+                <div class="recent-grid">
+                    <div class="recent-card"><img src="https://picsum.photos/seed/1/50" alt=""> <span>Lofi Beats</span></div>
+                    <div class="recent-card"><img src="https://picsum.photos/seed/2/50" alt=""> <span>Daily Mix 1</span></div>
+                    <div class="recent-card"><img src="https://picsum.photos/seed/3/50" alt=""> <span>Top 50 - Global</span></div>
+                    <div class="recent-card"><img src="https://picsum.photos/seed/4/50" alt=""> <span>Discover Weekly</span></div>
+                </div>
+            </section>
+
+            <section class="shelf">
+                <div class="shelf-header">
+                    <h2>Made For You</h2>
+                    <span>Show all</span>
+                </div>
+                <div class="card-grid">
+                    <div class="music-card">
+                        <div class="img-container">
+                            <img src="https://picsum.photos/seed/10/200" alt="Album">
+                            <button class="play-btn"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                        <h3>Daily Mix 2</h3>
+                        <p>Tame Impala, Glass Animals and more</p>
+                    </div>
+                    <div class="music-card">
+                        <div class="img-container">
+                            <img src="https://picsum.photos/seed/12/200" alt="Album">
+                            <button class="play-btn"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                        <h3>Deep Focus</h3>
+                        <p>Keep calm and focus with ambient music.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="player-bar">
+            <div class="now-playing">
+                <img src="https://picsum.photos/seed/10/200" alt="Current">
+                <div class="track-info">
+                    <div class="track-name">Borderline</div>
+                    <div class="artist-name">Tame Impala</div>
+                </div>
+                <i class="fa-regular fa-heart"></i>
+            </div>
+
+            <div class="player-controls">
+                <div class="control-buttons">
+                    <i class="fa-solid fa-shuffle"></i>
+                    <i class="fa-solid fa-backward-step"></i>
+                    <i class="fa-solid fa-circle-play main-play"></i>
+                    <i class="fa-solid fa-forward-step"></i>
+                    <i class="fa-solid fa-repeat"></i>
+                </div>
+                <div class="progress-container">
+                    <span>1:24</span>
+                    <div class="progress-bg"><div class="progress-fill"></div></div>
+                    <span>4:12</span>
+                </div>
+            </div>
+
+            <div class="volume-controls">
+                <i class="fa-solid fa-microphone"></i>
+                <i class="fa-solid fa-list-ul"></i>
+                <i class="fa-solid fa-volume-high"></i>
+                <div class="volume-bg"><div class="volume-fill"></div></div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
